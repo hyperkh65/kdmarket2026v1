@@ -9,7 +9,7 @@ import { ShoppingBag, Search, Menu } from 'lucide-react';
 import Link from 'next/link';
 
 // Use dynamic import for Map to prevent SSR issues with Leaflet
-const Map = dynamic(() => import('../components/Map'), {
+const Map = dynamic(() => import('@/components/Map'), {
     ssr: false,
     loading: () => <p>지도를 불러오는 중...</p>
 });
@@ -65,9 +65,9 @@ export default function Home() {
                 <Map shops={shops} onShopSelect={setSelectedShop} />
             </div>
 
-            {/* 3. Bottom Action Bar / Shop Drawer */}
+            {/* 3. Bottom Shop Drawer Area */}
             <div className={styles.bottomBar}>
-                {selectedShop ? (
+                {selectedShop && (
                     <div className={styles.shopCard}>
                         <h3>{selectedShop.name}</h3>
                         <p className={styles.category}>{selectedShop.category}</p>
@@ -78,16 +78,6 @@ export default function Home() {
                             <button className={styles.closeButton} onClick={() => setSelectedShop(null)}>닫기</button>
                         </div>
                     </div>
-                ) : (
-                    <nav className={styles.nav}>
-                        <Link href="/" className={styles.navItem}>홈</Link>
-                        <Link href="/picker" className={styles.navItem}>피커</Link>
-                        <Link href="/cart" className={styles.navItem}>
-                            <ShoppingBag size={20} />
-                            <span>장바구니</span>
-                        </Link>
-                        <Link href="/admin" className={styles.navItem}>관리자</Link>
-                    </nav>
                 )}
             </div>
         </main>

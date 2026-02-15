@@ -1,16 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      'via.placeholder.com',
-      'wghposuimbzslixfzogk.supabase.co', // Supabase Storage
-      'cdnjs.cloudflare.com'
+    remotePatterns: [
+      { protocol: 'https', hostname: 'via.placeholder.com' },
+      { protocol: 'https', hostname: 'wghposuimbzslixfzogk.supabase.co' },
+      { protocol: 'https', hostname: 'cdnjs.cloudflare.com' },
+      { protocol: 'https', hostname: 'source.unsplash.com' },
     ],
   },
   // Enable React Compiler for better performance
-  experimental: {
-    reactCompiler: true,
-  },
+  reactCompiler: true,
 };
 
 export default nextConfig;
