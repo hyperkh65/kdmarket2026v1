@@ -216,15 +216,20 @@ function ExploreContent() {
                 </div>
             )}
 
-            {/* 2. Map - Now with more breathing room (75%) */}
-            <div style={{ height: '75%', width: '100%', position: 'relative' }}>
+            {/* 2. Map - Dynamic Height */}
+            <div style={{
+                height: (selectedShop || selectedCategory !== '전체') ? '55%' : '75%',
+                width: '100%',
+                position: 'relative',
+                transition: 'height 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}>
                 {/* @ts-ignore */}
                 <Map shops={displayShops} onShopSelect={setSelectedShop} darkMode={false} userLocation={userLocation} selectedShop={selectedShop} />
             </div>
 
-            {/* 3. Bottom Sheet / Reviews List - Lowered (25%) */}
+            {/* 3. Bottom Sheet / Reviews List - Dynamic Height */}
             <div style={{
-                height: '25%',
+                height: (selectedShop || selectedCategory !== '전체') ? '45%' : '25%',
                 background: '#121212',
                 borderRadius: '32px 32px 0 0',
                 marginTop: '-32px',
@@ -233,14 +238,18 @@ function ExploreContent() {
                 padding: '24px 20px 80px',
                 overflowY: 'auto',
                 boxShadow: '0 -10px 40px rgba(0,0,0,0.4)',
-                borderTop: '1px solid rgba(255,255,255,0.05)'
+                borderTop: '1px solid rgba(255,255,255,0.05)',
+                transition: 'height 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
             }}>
                 <div style={{ width: '40px', height: '5px', background: '#333', borderRadius: '3px', margin: '0 auto 24px' }} />
 
                 {selectedShop ? (
                     <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-                            <h2 style={{ fontSize: '20px', fontWeight: 700 }}>{selectedShop.name}</h2>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <h2 style={{ fontSize: '20px', fontWeight: 700 }}>{selectedShop.name}</h2>
+                                {selectedShop.is_verified && <CheckCircle size={18} color="#FF5A00" fill="#FF5A00" style={{ color: 'white' }} />}
+                            </div>
                             <button onClick={() => setSelectedShop(null)} style={{ background: 'transparent', border: 'none' }}><X size={20} color="#666" /></button>
                         </div>
                         <p style={{ color: '#888', marginBottom: '16px' }}>{selectedShop.category}</p>
@@ -254,10 +263,7 @@ function ExploreContent() {
                             </Link>
                             <button
                                 onClick={() => {
-                                    // Internal guidance: just ensure map is centered on route
-                                    // The Map component already handles this via selectedShop prop
                                     if (userLocation) {
-                                        // Trigger a minor state update to force Map component to re-fit bounds if needed
                                         const originalShop = selectedShop;
                                         setSelectedShop(null);
                                         setTimeout(() => setSelectedShop(originalShop), 50);
@@ -271,6 +277,65 @@ function ExploreContent() {
                             >
                                 안내 시작
                             </button>
+                        </div>
+                    </div>
+                ) : selectedCategory !== '전체' ? (
+                    <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <h3 style={{ fontSize: '20px', fontWeight: 800 }}>
+                                <span style={{ color: '#FF5A00' }}>{selectedCategory}</span> 추천 목록
+                            </h3>
+                            <span style={{ fontSize: '13px', color: '#888', fontWeight: 500 }}>{displayShops.length}개의 점포</span>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {displayShops.length > 0 ? displayShops.map(shop => {
+                                const dist = userLocation
+                                    ? getDistance(userLocation[0], userLocation[1], shop.lat, shop.lng)
+                                    : '---';
+
+                                return (
+                                    <div
+                                        key={shop.id}
+                                        onClick={() => setSelectedShop(shop)}
+                                        style={{
+                                            display: 'flex', gap: '16px', background: '#1E1E1E', padding: '12px',
+                                            borderRadius: '16px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)',
+                                            transition: 'transform 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                    >
+                                        <div style={{ width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', background: '#2a2a2a' }}>
+                                            <img
+                                                src={shop.image_url || `https://source.unsplash.com/featured/?market,${shop.category || 'shop'}`}
+                                                alt={shop.name}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                onError={(e) => {
+                                                    e.currentTarget.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=200&auto=format&fit=crop';
+                                                }}
+                                            />
+                                        </div>
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                                <h4 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>{shop.name}</h4>
+                                                {shop.is_verified && <CheckCircle size={14} color="#FF5A00" fill="#FF5A00" style={{ color: 'white' }} />}
+                                            </div>
+                                            <div style={{ fontSize: '13px', color: '#999', marginBottom: '8px' }}>
+                                                {shop.category} · {dist}
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '6px' }}>
+                                                <span style={{ fontSize: '11px', background: 'rgba(255,90,0,0.1)', color: '#FF5A00', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>주민추천</span>
+                                                <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.05)', color: '#bbb', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>배달가능</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            }) : (
+                                <div style={{ textAlign: 'center', padding: '40px 0', color: '#666' }}>
+                                    해당 카테고리의 상점이 없습니다.
+                                </div>
+                            )}
                         </div>
                     </div>
                 ) : (

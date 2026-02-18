@@ -16,5 +16,8 @@ export async function GET(request: Request) {
     }
 
     // URL to redirect to after sign in process completes
-    return NextResponse.redirect(requestUrl.origin);
+    // In production, this should be https://abc.2days.kr
+    // In local development, it will be http://localhost:3000
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || requestUrl.origin;
+    return NextResponse.redirect(origin);
 }
