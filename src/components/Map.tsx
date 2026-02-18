@@ -76,6 +76,12 @@ const routeAnimationStyle = `
   .animated-route {
     stroke-dasharray: 10, 15;
     animation: route-flow 1.5s linear infinite;
+    filter: drop-shadow(0 0 5px rgba(0, 122, 255, 0.8));
+  }
+  .fallback-route {
+    stroke-dasharray: 8, 12;
+    animation: route-flow 2s linear infinite;
+    opacity: 0.6;
   }
 `;
 
@@ -129,13 +135,17 @@ function RoutingLayer({ userLocation, destination }: { userLocation: [number, nu
                 if (data.code === 'Ok' && data.routes.length > 0) {
                     const coords = data.routes[0].geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
                     setRoute(coords);
-
-                    // Fit map bounds to show the whole route
-                    const bounds = L.latLngBounds([userLocation, [destination.lat, destination.lng]]);
-                    map.fitBounds(bounds, { padding: [50, 50] });
+                } else {
+                    // Fallback to direct line if routing service fails
+                    setRoute([userLocation, [destination.lat, destination.lng]]);
                 }
+
+                // Fit map bounds to show the whole route regardless of source
+                const bounds = L.latLngBounds([userLocation, [destination.lat, destination.lng]]);
+                map.fitBounds(bounds, { padding: [50, 50] });
             } catch (error) {
                 console.error('Routing error:', error);
+                setRoute([userLocation, [destination.lat, destination.lng]]);
             }
         };
 

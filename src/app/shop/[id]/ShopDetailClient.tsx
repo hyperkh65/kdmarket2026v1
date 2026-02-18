@@ -3,12 +3,18 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import styles from './page.module.css';
-import { ChevronLeft, Share2, Heart, Phone, Info, Star, Edit3, ShoppingBag, MapPin, Trash2, ShoppingCart } from 'lucide-react';
+import { ChevronLeft, Share2, Heart, Phone, Info, Star, Edit3, ShoppingBag, MapPin, Trash2, ShoppingCart, Navigation } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import WikiEditor from '@/components/WikiEditor';
 import { getMarkerSvg } from '@/components/MapMarker';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+const Map = dynamic(() => import('@/components/Map'), {
+    ssr: false,
+    loading: () => <div style={{ height: '300px', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>지도를 불러오는 중...</div>
+});
 
 // Comprehensive cleanup to remove invisible control characters, broken unicode, and markers
 const cleanValue = (val: string | null) => {
@@ -106,6 +112,8 @@ export default function ShopDetailClient({ initialShop }: { initialShop: any }) 
     const [products, setProducts] = useState<any[]>([]);
     const [isEditingInfo, setIsEditingInfo] = useState(false);
     const [editDescription, setEditDescription] = useState(shop?.long_description || '');
+    const [showDirections, setShowDirections] = useState(false);
+    const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
     const { addItem, items } = useCart();
     const router = useRouter();
@@ -144,6 +152,15 @@ export default function ShopDetailClient({ initialShop }: { initialShop: any }) 
 
             checkPermissions();
             fetchProducts();
+
+            // Fetch user location for directions
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
+                    () => console.log('Location access denied'),
+                    { timeout: 5000 }
+                );
+            }
         }
     }, [initialShop]);
 
@@ -396,18 +413,11 @@ export default function ShopDetailClient({ initialShop }: { initialShop: any }) 
     };
 
     const handleDirections = () => {
-        const name = encodeURIComponent(shop.name);
-        const lat = shop.lat;
-        const lng = shop.lng;
-
-        if (!lat || !lng) {
+        if (!shop.lat || !shop.lng) {
             alert('위치 정보가 없는 상점입니다.');
             return;
         }
-
-        // Open Kakao Map for navigation
-        const url = `https://map.kakao.com/link/to/${name},${lat},${lng}`;
-        window.open(url, '_blank');
+        setShowDirections(true);
     };
 
     if (!shop) return <div style={{ padding: '20px' }}>로딩중...</div>;
@@ -985,6 +995,92 @@ export default function ShopDetailClient({ initialShop }: { initialShop: any }) 
                                 제품 삭제
                             </button>
                         )}
+                    </div>
+                </div>
+            )}
+            {/* Directions Map Modal */}
+            {showDirections && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 2000,
+                    background: 'rgba(0,0,0,0.85)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    animation: 'fadeIn 0.3s'
+                }}>
+                    <style>{`
+                        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                        @keyframes slideIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
+                    `}</style>
+                    <div style={{
+                        padding: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        background: '#1A1A1A',
+                        borderBottom: '1px solid #333'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: '40px', height: '40px', background: '#333', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Navigation size={22} color="#007AFF" />
+                            </div>
+                            <div>
+                                <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'white', margin: 0 }}>{shop.name} 가는 길</h3>
+                                <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>현재 위치 기준 경로 안내</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setShowDirections(false)}
+                            style={{ background: '#333', border: 'none', borderRadius: '50%', width: '32px', height: '32px', color: '#eee', cursor: 'pointer' }}>
+                            ✕
+                        </button>
+                    </div>
+                    <div style={{ flex: 1, position: 'relative' }}>
+                        <Map
+                            shops={[shop]}
+                            onShopSelect={() => { }}
+                            darkMode={true}
+                            userLocation={userLocation}
+                            selectedShop={shop}
+                        />
+                        {!userLocation && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                background: 'rgba(0,0,0,0.7)',
+                                color: 'white',
+                                padding: '12px 20px',
+                                borderRadius: '20px',
+                                fontSize: '13px',
+                                zIndex: 1001,
+                                textAlign: 'center'
+                            }}>
+                                위치 정보를 가져오는 중입니다...
+                            </div>
+                        )}
+                    </div>
+                    <div style={{ padding: '20px', background: '#1A1A1A', textAlign: 'center' }}>
+                        <button
+                            onClick={() => setShowDirections(false)}
+                            style={{
+                                width: '100%',
+                                height: '50px',
+                                background: 'linear-gradient(135deg, #007AFF, #0056b3)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '16px',
+                                fontWeight: 600,
+                                fontSize: '16px',
+                                boxShadow: '0 4px 15px rgba(0, 122, 255, 0.3)'
+                            }}>
+                            안내 종료
+                        </button>
                     </div>
                 </div>
             )}
