@@ -1,7 +1,3 @@
-# Vercel 배포 설정
 {
-    "buildCommand": "npm run build",
-    "outputDirectory": ".next",
-    "framework": "nextjs",
-    "installCommand": "npm install"
+    "framework": "nextjs"
 }
