@@ -1,0 +1,27 @@
+{
+    "name": "경동시장 로컬 플랫폼",
+    "short_name": "경동시장",
+    "description": "경동시장 특화 지도, 위키, 묶음배송 서비스",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#ff5a00",
+    "icons": [
+        {
+            "src": "/favicon.ico",
+            "sizes": "any",
+            "type": "image/x-icon"
+        },
+        {
+            "src": "/icon",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/apple-icon",
+            "sizes": "180x180",
+            "type": "image/png"
+        }
+    ]
+}

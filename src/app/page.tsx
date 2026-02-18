@@ -164,6 +164,7 @@ export default function Home() {
                 {/* Top Row */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                        <img src="/icon" alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
                         <span style={{ fontSize: '22px', fontWeight: 900, color: '#FF5A00', letterSpacing: '-1px' }}>경동마켓</span>
                         <div style={{ width: '1px', height: '16px', background: '#ddd' }}></div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
