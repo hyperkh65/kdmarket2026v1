@@ -1,0 +1,18 @@
+0 verbose cli /opt/homebrew/Cellar/node/25.5.0/bin/node /opt/homebrew/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@11.8.0
+2 info using node@v25.5.0
+3 silly config load:file:/opt/homebrew/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/kimhyun/project/.npmrc
+5 silly config load:file:/Users/kimhyun/project/seanoffice_pkg/project/seanoffice_pkg/project/seanoffice_pkg/project/seanoffice_pkg/.npmrc
+6 silly config load:file:/opt/homebrew/etc/npmrc
+7 verbose title npm exec clawdbot config
+8 verbose argv "exec" "--" "clawdbot" "config"
+9 verbose logfile logs-max:10 dir:/Users/kimhyun/project/seanoffice_pkg/project/seanoffice_pkg/project/seanoffice_pkg/project/seanoffice_pkg/.npm/_logs/2026-02-09T16_55_54_633Z-
+10 verbose logfile /Users/kimhyun/project/seanoffice_pkg/project/seanoffice_pkg/project/seanoffice_pkg/project/seanoffice_pkg/.npm/_logs/2026-02-09T16_55_54_633Z-debug-0.log
+11 silly logfile done cleaning log files
+12 verbose cwd /Users/kimhyun/project/seanoffice_pkg
+13 verbose os Darwin 25.0.0
+14 verbose node v25.5.0
+15 verbose npm  v11.8.0
+16 verbose exit 0
+17 info ok

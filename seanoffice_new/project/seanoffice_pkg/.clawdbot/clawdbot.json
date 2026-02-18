@@ -1,0 +1,20 @@
+{
+  "meta": { "lastTouchedVersion": "2026.1.30" },
+  "agents": {
+    "defaults": {
+      "model": { "primary": "openai-codex/gpt-4o" },
+      "workspace": "/workspace",
+      "sandbox": { "mode": "off" }
+    }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "botToken": "8564793268:AAHxE5FI-0d3PVpDeEKTsTtzZe9G-jiOdlQ"
+    }
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local"
+  }
+}
