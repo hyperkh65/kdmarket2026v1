@@ -14,6 +14,7 @@
     padding-bottom: env(safe-area-inset-bottom);
     z-index: 1000;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .item {
@@ -26,14 +27,32 @@
     font-size: 10px;
     gap: 4px;
     transition: all 0.2s ease;
+    text-decoration: none;
 }
 
 .active {
-    color: #FF5A5F;
+    color: var(--primary);
     font-weight: 600;
 }
 
 .active svg {
     stroke-width: 2.5px;
     transform: translateY(-2px);
+}
+
+/* Dark Mode Variants */
+.navDark {
+    background: rgba(30, 30, 30, 0.95);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.itemDark {
+    color: #666;
+    /* Unselected color in dark mode */
+}
+
+.itemDark.active {
+    color: var(--primary);
+    /* Active color remains the same or slightly adjusted */
+    text-shadow: 0 0 10px rgba(255, 90, 0, 0.3);
 }

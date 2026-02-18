@@ -10,6 +10,7 @@ interface Notification {
     message: string;
     type: 'order' | 'status' | 'info';
     timestamp: Date;
+    read?: boolean;
 }
 
 export default function NotificationCenter() {
@@ -28,11 +29,13 @@ export default function NotificationCenter() {
                     table: 'orders'
                 },
                 (payload) => {
+                    const status = (payload.new as any)?.status || '알 수 없음';
                     const newNotif: Notification = {
                         id: Date.now().toString(),
-                        message: `주문 상태 변경: ${payload.new.status}`,
+                        message: `주문 상태 변경: ${status}`,
                         type: 'status',
-                        timestamp: new Date()
+                        timestamp: new Date(),
+                        read: false
                     };
                     setNotifications(prev => [newNotif, ...prev].slice(0, 10));
                 }

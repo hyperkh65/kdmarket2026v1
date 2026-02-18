@@ -1,24 +1,35 @@
 :root {
-    /* Brand Colors */
-    --primary: #FF5A5F;
-    --secondary: #00A699;
-    --accent: #FC642D;
-    --background: #F7F7F7;
+    /* Brand Colors (MZ/Mart Style) */
+    --primary: #FF5A00;
+    /* Vibrant Orange (Food/Energy) */
+    --primary-dark: #E04F00;
+    --secondary: #2C3E50;
+    /* Clean Dark Blue/Grey for text */
+    --accent: #00D09C;
+    /* Mint Green for Eco/Fresh vibe */
+    --background: #F8F9FA;
+    /* Very light grey, easier on eyes than pure white */
     --surface: #FFFFFF;
-    --text-main: #222222;
-    --text-sub: #717171;
-    --border: #DDDDDD;
+    --text-main: #1A1A1A;
+    /* Soft Black */
+    --text-sub: #767676;
+    /* Gentle Grey */
+    --border: #EEEEEE;
 
-    /* Shadows for Depth (2.5D feel) */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-    --shadow-floating: 0 16px 32px rgba(0, 0, 0, 0.16);
+    /* Shadows (Modern & Soft) */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.08);
+    --shadow-floating: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
-    /* Spacing */
+    /* Spacing & Radii */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
     --safe-area-bottom: env(safe-area-inset-bottom);
-    --header-height: 60px;
-    --bottom-nav-height: 60px;
+    --header-height: 56px;
+    --bottom-nav-height: 64px;
 }
 
 * {

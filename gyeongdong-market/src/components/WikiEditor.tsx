@@ -1,112 +1,138 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabaseClient'; // Ensure consistent import
-import { X, Upload, Check } from 'lucide-react';
-import styles from './WikiEditor.module.css';
+import { supabase } from '@/lib/supabaseClient';
+import { Edit3, Check, X } from 'lucide-react';
 
-interface WikiEditorProps {
-    shopId: string;
-    initialData?: any; // Wiki diff structure
-    onClose: () => void;
-}
+export default function WikiEditor({ shopId, initialContent }: { shopId: string, initialContent: string | null }) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [content, setContent] = useState(initialContent || '');
+    const [originalContent, setOriginalContent] = useState(initialContent || '');
+    const [loading, setLoading] = useState(false);
 
-export default function WikiEditor({ shopId, onClose }: WikiEditorProps) {
-    const [changeType, setChangeType] = useState('price'); // price, hours, closed, etc.
-    const [description, setDescription] = useState('');
-    const [evidence, setEvidence] = useState<File | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-
+    const handleSave = async () => {
+        setLoading(true);
         try {
-            // 1. Upload Evidence (if any)
-            let evidenceUrl = '';
-            if (evidence) {
-                const fileName = `${shopId}/${Date.now()}_${evidence.name}`;
-                // Using supabase directly here (fix import if needed)
-                const { data, error } = await supabase.storage
-                    .from('wiki-evidence')
-                    .upload(fileName, evidence);
-
-                if (error) throw error;
-                // Get Public URL
-                const { data: publicURL } = supabase.storage.from('wiki-evidence').getPublicUrl(fileName);
-                evidenceUrl = publicURL.publicUrl;
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                alert('위키를 편집하려면 로그인이 필요합니다.');
+                setLoading(false);
+                return;
             }
 
-            // 2. Create Revision Record
-            const { error: dbError } = await supabase
-                .from('wiki_revisions')
-                .insert({
-                    shop_id: shopId,
-                    editor_user_id: (await supabase.auth.getUser()).data.user?.id, // Requires Auth context later
-                    diff_json: {
-                        type: changeType,
-                        description: description,
-                        ts: new Date().toISOString()
-                    },
-                    evidence_photo_urls: evidenceUrl ? [evidenceUrl] : [],
-                    status: 'PENDING'
-                });
+            // Check if wiki page exists
+            const { data: existing } = await supabase.from('wiki_pages').select('id').eq('shop_id', shopId).maybeSingle();
 
-            if (dbError) throw dbError;
+            let error;
+            if (existing) {
+                const { error: updateError } = await supabase
+                    .from('wiki_pages')
+                    .update({
+                        content: content,
+                        last_edited_by: user.id,
+                        last_edited_at: new Date()
+                    })
+                    .eq('id', existing.id);
+                error = updateError;
+            } else {
+                const { error: insertError } = await supabase
+                    .from('wiki_pages')
+                    .insert({
+                        shop_id: shopId,
+                        content: content,
+                        last_edited_by: user.id
+                    });
+                error = insertError;
+            }
 
-            alert('정보 수정 요청이 접수되었습니다! 운영자 검수 후 반영됩니다.');
-            onClose();
+            if (error) throw error;
 
-        } catch (err: any) {
-            console.error('Wiki submit error:', err);
-            alert('오류가 발생했습니다: ' + err.message);
+            setOriginalContent(content);
+            setIsEditing(false);
+            alert('위키가 수정되었습니다! 📝');
+        } catch (e: any) {
+            console.error(e);
+            alert('저장 실패: ' + e.message);
         } finally {
-            setIsSubmitting(false);
+            setLoading(false);
         }
     };
 
     return (
-        <div className={styles.overlay}>
-            <div className={styles.modal}>
-                <div className={styles.header}>
-                    <h3>정보 수정 제안 (Wiki)</h3>
-                    <button onClick={onClose}><X /></button>
-                </div>
-
-                <form onSubmit={handleSubmit} className={styles.form}>
-                    <label>무엇이 바뀌었나요?</label>
-                    <select value={changeType} onChange={e => setChangeType(e.target.value)} className={styles.select}>
-                        <option value="price">가격 변동</option>
-                        <option value="hours">영업시간 변경</option>
-                        <option value="closed">폐업/휴무</option>
-                        <option value="menu">메뉴 추가/삭제</option>
-                    </select>
-
-                    <label>내용 설명</label>
-                    <textarea
-                        value={description}
-                        onChange={e => setDescription(e.target.value)}
-                        placeholder="예: 건오징어 가격이 5천원 올랐어요."
-                        className={styles.textarea}
-                        required
-                    />
-
-                    <label>증빙 사진 (선택)</label>
-                    <div className={styles.fileInput}>
-                        <Upload size={16} />
-                        <input type="file" onChange={e => setEvidence(e.target.files?.[0] || null)} accept="image/*" />
-                        {evidence && <span>{evidence.name}</span>}
-                    </div>
-
-                    <p className={styles.notice}>
-                        * 허위 정보 제안 시 이용이 제한될 수 있습니다.
-                    </p>
-
-                    <button type="submit" disabled={isSubmitting} className={styles.submitButton}>
-                        {isSubmitting ? '전송 중...' : '제안하기'}
+        <div style={{ padding: '20px', background: 'white', marginTop: '12px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 800 }}>🗺️ 대동여지도 (위키)</h3>
+                {!isEditing ? (
+                    <button
+                        onClick={() => setIsEditing(true)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '8px', background: '#F0F0F0', border: 'none', color: '#555', fontSize: '13px', fontWeight: 600 }}
+                    >
+                        <Edit3 size={14} /> 편집하기
                     </button>
-                </form>
+                ) : (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                            onClick={() => {
+                                setContent(originalContent);
+                                setIsEditing(false);
+                            }}
+                            style={{ padding: '6px 12px', borderRadius: '8px', background: '#eee', border: 'none', color: '#555' }}
+                        >
+                            <X size={16} />
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            disabled={loading}
+                            style={{ padding: '6px 12px', borderRadius: '8px', background: '#222', border: 'none', color: 'white', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        >
+                            {loading ? '...' : <><Check size={16} /> 저장</>}
+                        </button>
+                    </div>
+                )}
             </div>
+
+            {isEditing ? (
+                <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="이 가게만의 꿀팁이나 정보를 자유롭게 공유해주세요! (예: 사장님이 서비스를 잘 주셔요, 2층 좌석 뷰가 좋아요)"
+                    style={{ width: '100%', minHeight: '150px', padding: '12px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '14px', lineHeight: 1.6 }}
+                />
+            ) : (
+                <div style={{ position: 'relative' }}>
+                    <div style={{ fontSize: '14px', lineHeight: 1.6, color: '#444', whiteSpace: 'pre-wrap' }}>
+                        {content || (
+                            <span style={{ color: '#999' }}>
+                                아직 작성된 위키 내용이 없습니다.<br />
+                                첫 번째 위키 작성자가 되어보세요! 🏆
+                            </span>
+                        )}
+                    </div>
+                    {content && (
+                        <button
+                            onClick={async () => {
+                                const reason = prompt('신고 사유를 입력해주세요 (예: 욕설, 스팸, 부적절한 콘텐츠)');
+                                if (!reason) return;
+                                const { data: { user } } = await supabase.auth.getUser();
+                                if (!user) return alert('로그인이 필요합니다.');
+
+                                const { error } = await supabase.from('reports').insert({
+                                    reporter_id: user.id,
+                                    content_type: 'wiki',
+                                    content_id: shopId,
+                                    reason: reason
+                                });
+
+                                if (error) alert('신고 실패: ' + error.message);
+                                else alert('신고가 접수되었습니다.');
+                            }}
+                            style={{ position: 'absolute', bottom: 0, right: 0, background: 'none', border: 'none', color: '#ccc', fontSize: '11px', cursor: 'pointer' }}
+                        >
+                            🚨 신고하기
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
